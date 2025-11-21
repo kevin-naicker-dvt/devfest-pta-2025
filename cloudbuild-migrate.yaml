@@ -1,0 +1,94 @@
+# Cloud Build Configuration for Database Migrations
+# Trigger: Manual or after Cloud SQL setup
+# Purpose: Run database migration scripts on Cloud SQL
+
+substitutions:
+  _REGION: 'us-central1'
+  _INSTANCE_CONNECTION_NAME: '${PROJECT_ID}:us-central1:devfest-postgres'
+  _DB_NAME: 'devfest_db'
+  _DB_USER: 'devfest_user'
+
+steps:
+  # Step 1: Wait for Cloud SQL to be ready
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'check-cloudsql'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Checking Cloud SQL instance availability..."
+        gcloud sql instances describe devfest-postgres --format="value(state)"
+
+  # Step 2: Run migration using Cloud SQL Proxy
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'run-migrations'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Install postgresql-client
+        apt-get update && apt-get install -y postgresql-client
+        
+        # Get DB password from Secret Manager
+        DB_PASSWORD=$(gcloud secrets versions access latest --secret="db-password")
+        
+        # Run migrations
+        echo "Running database migrations..."
+        PGPASSWORD=$DB_PASSWORD psql \
+          "host=/cloudsql/${_INSTANCE_CONNECTION_NAME} \
+           dbname=${_DB_NAME} \
+           user=${_DB_USER} \
+           sslmode=disable" \
+          -f database/migrations/001_create_applications.sql
+        
+        echo "✅ Migrations completed successfully!"
+    timeout: '300s'
+
+  # Step 3: Verify migrations
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'verify-migrations'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update && apt-get install -y postgresql-client
+        
+        DB_PASSWORD=$(gcloud secrets versions access latest --secret="db-password")
+        
+        echo "Verifying database tables..."
+        PGPASSWORD=$DB_PASSWORD psql \
+          "host=/cloudsql/${_INSTANCE_CONNECTION_NAME} \
+           dbname=${_DB_NAME} \
+           user=${_DB_USER} \
+           sslmode=disable" \
+          -c "\dt"
+        
+        echo "Checking hello_world table..."
+        PGPASSWORD=$DB_PASSWORD psql \
+          "host=/cloudsql/${_INSTANCE_CONNECTION_NAME} \
+           dbname=${_DB_NAME} \
+           user=${_DB_USER} \
+           sslmode=disable" \
+          -c "SELECT COUNT(*) FROM hello_world;"
+        
+        echo "Checking applications table..."
+        PGPASSWORD=$DB_PASSWORD psql \
+          "host=/cloudsql/${_INSTANCE_CONNECTION_NAME} \
+           dbname=${_DB_NAME} \
+           user=${_DB_USER} \
+           sslmode=disable" \
+          -c "SELECT COUNT(*) FROM applications;"
+        
+        echo "✅ Verification completed!"
+
+# Timeout for the entire build
+timeout: '600s'
+
+# Options
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'N1_HIGHCPU_8'
+
+# Tags for identifying the build
+tags: ['database', 'migration', 'devfest']
+

@@ -113,15 +113,39 @@ npm start
 
 ## GCP Demo Deployment
 
-1. **Configure environment variables**
-   ```bash
-   cp .env.demo.example .env.demo
-   # Update with your Cloud SQL instance details
-   ```
+### Quick Start (5 Commands)
 
-2. **Build and deploy using Cloud Build**
-   - Triggers are configured for GitHub integration
-   - Images are built automatically on push to main branch
+See [`cloud/QUICKSTART-GCP.md`](cloud/QUICKSTART-GCP.md) for the fastest path to deployment.
+
+```bash
+# 1. Setup (one-time, ~10 minutes)
+bash cloud/scripts/enable-apis.sh
+# Create Cloud SQL, database, and secret (see QUICKSTART)
+bash cloud/scripts/setup-permissions.sh
+
+# 2. Deploy everything (~10 minutes)
+bash cloud/scripts/deploy-all.sh
+```
+
+### Deployment Files
+
+- **Cloud Build Pipelines**:
+  - [`cloudbuild-migrate.yaml`](cloudbuild-migrate.yaml) - Database migrations
+  - [`cloudbuild-backend.yaml`](cloudbuild-backend.yaml) - Backend API + Cloud Run
+  - [`cloudbuild-frontend.yaml`](cloudbuild-frontend.yaml) - Frontend + Cloud Run
+
+- **Documentation**:
+  - [`cloud/QUICKSTART-GCP.md`](cloud/QUICKSTART-GCP.md) - Quick 5-command setup
+  - [`cloud/DEPLOYMENT-GUIDE.md`](cloud/DEPLOYMENT-GUIDE.md) - Complete deployment guide
+  - [`cloud/CLOUD-SQL-SETUP.md`](cloud/CLOUD-SQL-SETUP.md) - Cloud SQL configuration
+  - [`DEPLOYMENT-SUMMARY.md`](DEPLOYMENT-SUMMARY.md) - Architecture overview
+
+### Automated CI/CD
+
+Cloud Build triggers automatically deploy on push to `main`:
+- Backend changes → Triggers `cloudbuild-backend.yaml`
+- Frontend changes → Triggers `cloudbuild-frontend.yaml`
+- Migrations → Manual trigger via `cloudbuild-migrate.yaml`
 
 ## Application Features
 
