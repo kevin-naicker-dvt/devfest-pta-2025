@@ -1,4 +1,4 @@
-# DevFest PTA 2025 - Setup Guide
+# DevFest PTA 2025 - Setup Guide / Stable Hello World
 
 ## Phase 1: Hello World Architecture Test
 
