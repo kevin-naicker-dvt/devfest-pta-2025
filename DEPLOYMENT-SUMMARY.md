@@ -164,6 +164,20 @@ gcloud run services describe devfest-backend \
 
 ### Setup Cloud Build Triggers
 
+**Complete Guide**: See [`cloud/TRIGGER-SETUP-GUIDE.md`](cloud/TRIGGER-SETUP-GUIDE.md)
+
+#### Quick Setup (Automated Script)
+
+```bash
+# One-command trigger setup
+bash cloud/scripts/setup-triggers.sh
+```
+
+This creates 3 triggers:
+1. **migrate-database** (manual) - Run migrations on-demand
+2. **backend-deploy** (auto) - Deploy backend on code changes
+3. **frontend-deploy** (auto) - Deploy frontend on code changes
+
 #### Backend Trigger
 ```yaml
 Name: backend-deploy
@@ -187,26 +201,13 @@ Substitutions:
 ```
 
 **Setup via Console**:
-https://console.cloud.google.com/cloud-build/triggers
+1. Go to: https://console.cloud.google.com/cloud-build/triggers
+2. Connect Repository: `kevin-naicker-dvt/devfest-pta-2025`
+3. Create triggers with configurations above
 
-Or via CLI:
+**Or use the automated script**:
 ```bash
-# Connect repository first
-gcloud beta builds triggers create github \
-    --name=backend-deploy \
-    --repo-name=devfest-pta-2025 \
-    --repo-owner=kevin-naicker-dvt \
-    --branch-pattern=^main$ \
-    --build-config=cloudbuild-backend.yaml \
-    --included-files='backend/**,cloudbuild-backend.yaml'
-
-gcloud beta builds triggers create github \
-    --name=frontend-deploy \
-    --repo-name=devfest-pta-2025 \
-    --repo-owner=kevin-naicker-dvt \
-    --branch-pattern=^main$ \
-    --build-config=cloudbuild-frontend.yaml \
-    --included-files='frontend/**,cloudbuild-frontend.yaml'
+bash cloud/scripts/setup-triggers.sh
 ```
 
 ---
