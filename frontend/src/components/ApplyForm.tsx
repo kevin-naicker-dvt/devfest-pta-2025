@@ -9,6 +9,9 @@ interface ApplyFormProps {
 }
 
 const ApplyForm: React.FC<ApplyFormProps> = ({ currentUser, onSuccess }) => {
+  const [candidateName, setCandidateName] = useState(currentUser.name);
+  const [candidateEmail, setCandidateEmail] = useState(currentUser.email);
+  const [candidateFullName, setCandidateFullName] = useState(currentUser.fullName);
   const [position, setPosition] = useState('');
   const [coverLetter, setCoverLetter] = useState('');
   const [cvFilename, setCvFilename] = useState('');
@@ -30,7 +33,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ currentUser, onSuccess }) => {
 
   const handleFileSimulation = () => {
     // Simulate file selection
-    const simulatedFilename = `${currentUser.name}_cv_${Date.now()}.pdf`;
+    const simulatedFilename = `${candidateName}_cv_${Date.now()}.pdf`;
     setCvFilename(simulatedFilename);
   };
 
@@ -41,15 +44,18 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ currentUser, onSuccess }) => {
 
     try {
       await axios.post(`${API_URL}/api/applications`, {
-        candidateName: currentUser.name,
-        candidateEmail: currentUser.email,
-        candidateFullName: currentUser.fullName,
+        candidateName,
+        candidateEmail,
+        candidateFullName,
         position,
         cvFilename,
         coverLetter,
       });
 
       // Reset form
+      setCandidateName(currentUser.name);
+      setCandidateEmail(currentUser.email);
+      setCandidateFullName(currentUser.fullName);
       setPosition('');
       setCoverLetter('');
       setCvFilename('');
@@ -69,24 +75,42 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ currentUser, onSuccess }) => {
 
         <form onSubmit={handleSubmit} className="apply-form">
           <div className="form-group">
-            <label htmlFor="fullName">Full Name</label>
+            <label htmlFor="candidateName">Username *</label>
             <input
-              id="fullName"
+              id="candidateName"
               type="text"
-              value={currentUser.fullName}
-              disabled
-              className="form-input disabled"
+              value={candidateName}
+              onChange={(e) => setCandidateName(e.target.value)}
+              required
+              placeholder="e.g., alex.smith"
+              className="form-input"
+            />
+            <small className="form-hint">Edit to create applications for different candidates</small>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email Address *</label>
+            <input
+              id="email"
+              type="email"
+              value={candidateEmail}
+              onChange={(e) => setCandidateEmail(e.target.value)}
+              required
+              placeholder="e.g., alex.smith@example.com"
+              className="form-input"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="fullName">Full Name *</label>
             <input
-              id="email"
-              type="email"
-              value={currentUser.email}
-              disabled
-              className="form-input disabled"
+              id="fullName"
+              type="text"
+              value={candidateFullName}
+              onChange={(e) => setCandidateFullName(e.target.value)}
+              required
+              placeholder="e.g., Alex Smith"
+              className="form-input"
             />
           </div>
 
@@ -154,7 +178,7 @@ const ApplyForm: React.FC<ApplyFormProps> = ({ currentUser, onSuccess }) => {
 
           <button
             type="submit"
-            disabled={loading || !position || !cvFilename}
+            disabled={loading || !position || !cvFilename || !candidateName || !candidateEmail || !candidateFullName}
             className="btn-submit"
           >
             {loading ? 'Submitting...' : '🚀 Submit Application'}

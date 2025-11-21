@@ -76,8 +76,15 @@ const MyApplications: React.FC<MyApplicationsProps> = ({ currentUser }) => {
   return (
     <div className="my-applications-container">
       <div className="applications-header">
-        <h2>📋 My Applications</h2>
-        <p>Track the status of your job applications</p>
+        <div className="header-content">
+          <div>
+            <h2>📋 My Applications</h2>
+            <p>Track the status of your job applications</p>
+          </div>
+          <button onClick={fetchApplications} className="btn-refresh" disabled={loading}>
+            {loading ? '⏳ Refreshing...' : '🔄 Refresh'}
+          </button>
+        </div>
       </div>
 
       {applications.length === 0 ? (
@@ -100,13 +107,25 @@ const MyApplications: React.FC<MyApplicationsProps> = ({ currentUser }) => {
                   <span className="detail-value">{formatDate(app.createdAt)}</span>
                 </div>
                 <div className="card-detail">
+                  <span className="detail-label">Last Updated:</span>
+                  <span className="detail-value">{formatDate(app.updatedAt)}</span>
+                </div>
+                <div className="card-detail">
                   <span className="detail-label">CV:</span>
                   <span className="detail-value">📄 {app.cvFilename}</span>
                 </div>
+                {app.coverLetter && (
+                  <div className="card-section">
+                    <span className="detail-label">Cover Letter:</span>
+                    <p className="cover-letter-preview">{app.coverLetter.substring(0, 150)}{app.coverLetter.length > 150 ? '...' : ''}</p>
+                  </div>
+                )}
                 {app.notes && (
                   <div className="card-notes">
-                    <span className="detail-label">Recruiter Notes:</span>
-                    <p>{app.notes}</p>
+                    <div className="notes-header">
+                      <span className="detail-label">💬 Recruiter Feedback:</span>
+                    </div>
+                    <p className="notes-content">{app.notes}</p>
                   </div>
                 )}
               </div>

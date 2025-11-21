@@ -15,15 +15,15 @@ function App() {
   // Mock users for demo
   const mockUsers = {
     applicant: {
-      name: 'john.doe',
-      email: 'john.doe@example.com',
-      fullName: 'John Doe',
+      name: 'alex.smith',
+      email: 'alex.smith@example.com',
+      fullName: 'Alex Smith',
       role: 'applicant' as const,
     },
     recruiter: {
-      name: 'jane.recruiter',
-      email: 'jane.recruiter@company.com',
-      fullName: 'Jane Recruiter',
+      name: 'sarah.jones',
+      email: 'sarah.jones@company.com',
+      fullName: 'Sarah Jones',
       role: 'recruiter' as const,
     },
   };

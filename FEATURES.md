@@ -26,7 +26,7 @@ The DevFest Recruitment Application is a complete 3-tier cloud-native demo showc
 **Location**: Applicant View → "Apply for Job"
 
 **Features**:
-- Pre-filled candidate information (name, email, full name)
+- Editable candidate information (username, email, full name) - allows creating multiple test applications
 - Position selection dropdown (8 positions available)
 - **Simulated CV Upload** 📄
   - Click "Simulate CV Upload" button
@@ -133,15 +133,15 @@ All endpoints are prefixed with `/api`
 ## 🎭 Demo User Accounts
 
 ### Applicant Account
-- **Name**: john.doe
-- **Email**: john.doe@example.com
-- **Full Name**: John Doe
+- **Name**: alex.smith
+- **Email**: alex.smith@example.com
+- **Full Name**: Alex Smith
 - **Role**: Applicant
 
 ### Recruiter Account
-- **Name**: jane.recruiter
-- **Email**: jane.recruiter@company.com
-- **Full Name**: Jane Recruiter
+- **Name**: sarah.jones
+- **Email**: sarah.jones@company.com
+- **Full Name**: Sarah Jones
 - **Role**: Recruiter
 
 ## 🚀 How to Test the Application
@@ -150,18 +150,21 @@ All endpoints are prefixed with `/api`
 
 1. Open http://localhost:3000
 2. Click "Start Demo" or "Login (Demo)"
-3. You'll be logged in as John Doe (Applicant)
+3. You'll be logged in as Alex Smith (Applicant)
 4. Click "Apply for Job"
-5. Select a position (e.g., "Frontend Developer")
-6. Click "Simulate CV Upload" (generates mock filename)
-7. Optionally add a cover letter
-8. Click "Submit Application"
-9. View your submission in "My Applications"
+5. Edit candidate details if you want to create multiple test applications
+6. Select a position (e.g., "Frontend Developer")
+7. Click "Simulate CV Upload" (generates mock filename)
+8. Optionally add a cover letter
+9. Click "Submit Application"
+10. View your submission in "My Applications"
+
+**Pro Tip**: Edit the username, email, and full name fields to create applications for different candidates!
 
 ### 2. Switch to Recruiter
 
 1. Click "Switch to Recruiter" in top navigation
-2. You're now logged in as Jane Recruiter
+2. You're now logged in as Sarah Jones (Recruiter)
 3. Click "Open Dashboard"
 4. See statistics and all applications
 5. Click "View" on any application
