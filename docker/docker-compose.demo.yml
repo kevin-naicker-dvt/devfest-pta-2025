@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # NestJS Backend API (connects to Cloud SQL)
   backend:
