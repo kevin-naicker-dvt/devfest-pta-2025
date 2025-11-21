@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: devfest-postgres-local
+    environment:
+      POSTGRES_DB: ${DB_NAME:-devfest_db}
+      POSTGRES_USER: ${DB_USER:-devfest_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-DevF3st123-pluto-is-plan3t}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - devfest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-devfest_user} -d ${DB_NAME:-devfest_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NestJS Backend API
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: devfest-backend-local
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-devfest_db}
+      DB_USER: ${DB_USER:-devfest_user}
+      DB_PASSWORD: ${DB_PASSWORD:-DevF3st123-pluto-is-plan3t}
+      BACKEND_PORT: 3001
+      NODE_ENV: development
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devfest-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        REACT_APP_API_URL: http://localhost:3001
+    container_name: devfest-frontend-local
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - devfest-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  devfest-network:
+    driver: bridge
+

@@ -1,0 +1,46 @@
+# Cloud Build configuration for Frontend
+# Triggered on push to main branch
+
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/devfest-frontend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/devfest-frontend:latest'
+      - '-f'
+      - 'docker/Dockerfile.frontend'
+      - '--build-arg'
+      - 'REACT_APP_API_URL=${_API_URL}'
+      - '.'
+
+  # Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/devfest-frontend:$SHORT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/devfest-frontend:latest'
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/devfest-frontend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/devfest-frontend:latest'
+
+# Substitutions (can be overridden in trigger)
+substitutions:
+  _API_URL: 'https://backend-url-here'
+
+# Build timeout
+timeout: '1200s'
+
+# Options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+

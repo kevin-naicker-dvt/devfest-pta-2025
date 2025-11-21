@@ -1,0 +1,40 @@
+# Cloud Build configuration for Backend API
+# Triggered on push to main branch
+
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/devfest-backend:latest'
+      - '-f'
+      - 'docker/Dockerfile.backend'
+      - '.'
+
+  # Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/devfest-backend:latest'
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/devfest-backend:latest'
+
+# Build timeout
+timeout: '1200s'
+
+# Options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+

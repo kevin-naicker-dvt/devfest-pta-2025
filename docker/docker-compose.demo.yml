@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # NestJS Backend API (connects to Cloud SQL)
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: devfest-backend-demo
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      BACKEND_PORT: 8080
+      NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "8080:8080"
+    networks:
+      - devfest-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL}
+    container_name: devfest-frontend-demo
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - devfest-network
+    restart: unless-stopped
+
+networks:
+  devfest-network:
+    driver: bridge
+
