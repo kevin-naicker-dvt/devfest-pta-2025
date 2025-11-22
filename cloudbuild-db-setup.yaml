@@ -70,8 +70,8 @@ steps:
         echo "Region: africa-south1"
         echo ""
         echo "Connection String for Cloud Run:"
-        INSTANCE_CONNECTION=$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
-        echo "INSTANCE_CONNECTION_NAME: $INSTANCE_CONNECTION"
+        INSTANCE_CONNECTION=$$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
+        echo "INSTANCE_CONNECTION_NAME: $$INSTANCE_CONNECTION"
         echo ""
         echo "Use this in your Cloud Run services!"
         echo "=========================================="
