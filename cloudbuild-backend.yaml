@@ -64,7 +64,7 @@ steps:
         fi
         
         gcloud run deploy devfest-backend \
-          --image=gcr.io/$$PROJECT_ID/devfest-backend:$$SHORT_SHA \
+          --image=gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA \
           --platform=managed \
           --region=africa-south1 \
           --allow-unauthenticated \

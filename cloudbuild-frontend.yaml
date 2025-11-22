@@ -26,8 +26,8 @@ steps:
         echo "Building frontend with API URL: $$BACKEND_URL"
         
         docker build \
-          -t gcr.io/$$PROJECT_ID/devfest-frontend:$$SHORT_SHA \
-          -t gcr.io/$$PROJECT_ID/devfest-frontend:latest \
+          -t gcr.io/$PROJECT_ID/devfest-frontend:$SHORT_SHA \
+          -t gcr.io/$PROJECT_ID/devfest-frontend:latest \
           -f docker/Dockerfile.frontend \
           --build-arg REACT_APP_API_URL=$$BACKEND_URL \
           .
@@ -57,7 +57,7 @@ steps:
         echo "Configured to use Backend URL: $$BACKEND_URL"
         
         gcloud run deploy devfest-frontend \
-          --image=gcr.io/$$PROJECT_ID/devfest-frontend:$$SHORT_SHA \
+          --image=gcr.io/$PROJECT_ID/devfest-frontend:$SHORT_SHA \
           --platform=managed \
           --region=africa-south1 \
           --allow-unauthenticated \
