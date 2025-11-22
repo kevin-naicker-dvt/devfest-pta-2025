@@ -109,8 +109,6 @@ Let me know if you have any clarifying questions, but do not start coding, I wil
 6. Yes, use .env file for both
 7. Yes, please separate local and demo (do not use production term, as this is a demo)
 
----------------------------------------------------------------------------------
-
 Ok great, let's start with Hello world app to test the local docker architecture >> Stage 0.1 Draft
 
 ---------------------------------------------------------------------------------
