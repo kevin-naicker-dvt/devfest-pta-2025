@@ -52,6 +52,17 @@ steps:
         echo "Deploying backend to Cloud Run..."
         echo "Using CloudSQL connection: $$INSTANCE_CONNECTION"
         
+        # Get the public IP of the CloudSQL instance
+        DB_IP=$$(gcloud sql instances describe devfest-db-instance --format='value(ipAddresses[0].ipAddress)' 2>/dev/null || echo "")
+        
+        if [ -n "$$DB_IP" ]; then
+          echo "Using public IP connection: $$DB_IP"
+          DB_HOST="$$DB_IP"
+        else
+          echo "Using Unix socket connection"
+          DB_HOST="/cloudsql/$$INSTANCE_CONNECTION"
+        fi
+        
         gcloud run deploy devfest-backend \
           --image=gcr.io/$$PROJECT_ID/devfest-backend:$$SHORT_SHA \
           --platform=managed \
@@ -62,15 +73,10 @@ steps:
           --cpu=1 \
           --min-instances=0 \
           --max-instances=10 \
-          --set-env-vars="NODE_ENV=production" \
-          --set-env-vars="DB_HOST=/cloudsql/$$INSTANCE_CONNECTION" \
-          --set-env-vars="DB_PORT=5432" \
-          --set-env-vars="DB_NAME=${_DATABASE_NAME}" \
-          --set-env-vars="DB_USER=${_DB_USER}" \
-          --set-env-vars="DB_PASSWORD=${_DB_PASSWORD}" \
+          --set-env-vars="NODE_ENV=production,DB_HOST=$$DB_HOST,DB_PORT=5432,DB_NAME=${_DATABASE_NAME},DB_USER=${_DB_USER},DB_PASSWORD=${_DB_PASSWORD}" \
           --add-cloudsql-instances=$$INSTANCE_CONNECTION
         
-        echo "Backend deployment complete!"
+        echo "✓ Backend deployment complete!"
 
   # Step 5: Get and display backend URL
   - name: 'gcr.io/cloud-builders/gcloud'

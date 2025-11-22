@@ -11,18 +11,24 @@ import { Application } from './entities/application.entity';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      // Cloud Run uses Unix socket for CloudSQL connection
+      // Cloud Run can use Unix socket or public IP for CloudSQL connection
       // Local development uses TCP
       ...(process.env.DB_HOST?.startsWith('/cloudsql/')
         ? {
-            host: process.env.DB_HOST, // Unix socket path
+            // Unix socket connection
+            host: process.env.DB_HOST,
             extra: {
               socketPath: process.env.DB_HOST,
             },
           }
         : {
+            // TCP connection (public IP or localhost)
             host: process.env.DB_HOST || 'localhost',
             port: parseInt(process.env.DB_PORT) || 5432,
+            // Enable SSL for public IP connections in production
+            ...(process.env.NODE_ENV === 'production' && process.env.DB_HOST !== 'localhost'
+              ? { ssl: { rejectUnauthorized: false } }
+              : {}),
           }),
       username: process.env.DB_USER || 'devfest_user',
       password: process.env.DB_PASSWORD || 'DevF3st123-pluto-is-plan3t',
@@ -30,7 +36,6 @@ import { Application } from './entities/application.entity';
       entities: [HelloWorld, Application],
       synchronize: false, // Using migration scripts instead
       logging: process.env.NODE_ENV !== 'production', // Reduce logs in production
-      ssl: false, // CloudSQL Unix socket doesn't need SSL
     }),
     TypeOrmModule.forFeature([HelloWorld, Application]),
   ],
