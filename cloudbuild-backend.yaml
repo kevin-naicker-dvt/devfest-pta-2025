@@ -1,9 +1,11 @@
 # Cloud Build configuration for Backend API
 # Triggered on push to main branch
+# Builds Docker image and deploys to Cloud Run
 
 steps:
-  # Build the Docker image
+  # Step 1: Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-backend-image'
     args:
       - 'build'
       - '-t'
@@ -14,21 +16,92 @@ steps:
       - 'docker/Dockerfile.backend'
       - '.'
 
-  # Push the image to Container Registry
+  # Step 2: Push the image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend-sha'
     args:
       - 'push'
       - 'gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA'
 
   - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend-latest'
     args:
       - 'push'
       - 'gcr.io/$PROJECT_ID/devfest-backend:latest'
+
+  # Step 3: Get CloudSQL Connection Name
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'get-cloudsql-connection'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Getting CloudSQL connection name..."
+        INSTANCE_CONNECTION=$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
+        echo "$INSTANCE_CONNECTION" > /workspace/instance_connection.txt
+        echo "Connection name: $INSTANCE_CONNECTION"
+
+  # Step 4: Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-backend-to-cloud-run'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        INSTANCE_CONNECTION=$(cat /workspace/instance_connection.txt)
+        echo "Deploying backend to Cloud Run..."
+        echo "Using CloudSQL connection: $INSTANCE_CONNECTION"
+        
+        gcloud run deploy devfest-backend \
+          --image=gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA \
+          --platform=managed \
+          --region=africa-south1 \
+          --allow-unauthenticated \
+          --port=3001 \
+          --memory=512Mi \
+          --cpu=1 \
+          --min-instances=0 \
+          --max-instances=10 \
+          --set-env-vars="NODE_ENV=production" \
+          --set-env-vars="DB_HOST=/cloudsql/$INSTANCE_CONNECTION" \
+          --set-env-vars="DB_PORT=5432" \
+          --set-env-vars="DB_NAME=${_DATABASE_NAME}" \
+          --set-env-vars="DB_USER=${_DB_USER}" \
+          --set-env-vars="DB_PASSWORD=${_DB_PASSWORD}" \
+          --add-cloudsql-instances=$INSTANCE_CONNECTION
+        
+        echo "Backend deployment complete!"
+
+  # Step 5: Get and display backend URL
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'display-backend-url'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        BACKEND_URL=$(gcloud run services describe devfest-backend --region=africa-south1 --format='value(status.url)')
+        echo "=========================================="
+        echo "Backend API deployed successfully!"
+        echo "=========================================="
+        echo "Backend URL: $BACKEND_URL"
+        echo ""
+        echo "Test endpoints:"
+        echo "  Health check: $BACKEND_URL"
+        echo "  Hello World: $BACKEND_URL/hello"
+        echo "  Applications: $BACKEND_URL/applications"
+        echo "=========================================="
+        echo "$BACKEND_URL" > /workspace/backend_url.txt
 
 # Store images in Container Registry
 images:
   - 'gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA'
   - 'gcr.io/$PROJECT_ID/devfest-backend:latest'
+
+# Substitutions - Override these in Cloud Build Trigger
+substitutions:
+  _DATABASE_NAME: 'devfest_db'
+  _DB_USER: 'devfest_user'
+  _DB_PASSWORD: 'DevF3st123-pluto-is-plan3t'
 
 # Build timeout
 timeout: '1200s'

@@ -1,0 +1,113 @@
+# Cloud Build configuration for Database Migrations
+# Triggered on push to main branch (after code changes)
+# Runs database migration scripts against CloudSQL
+
+steps:
+  # Step 1: Install Cloud SQL Proxy
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'install-cloud-sql-proxy'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Downloading Cloud SQL Proxy..."
+        wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /workspace/cloud_sql_proxy
+        chmod +x /workspace/cloud_sql_proxy
+        echo "Cloud SQL Proxy downloaded successfully"
+
+  # Step 2: Get CloudSQL Connection Name
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'get-connection-name'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Getting CloudSQL connection name..."
+        INSTANCE_CONNECTION=$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
+        echo "$INSTANCE_CONNECTION" > /workspace/instance_connection.txt
+        echo "Connection name: $INSTANCE_CONNECTION"
+
+  # Step 3: Start Cloud SQL Proxy in background
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'start-proxy'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Starting Cloud SQL Proxy..."
+        INSTANCE_CONNECTION=$(cat /workspace/instance_connection.txt)
+        /workspace/cloud_sql_proxy -instances=$INSTANCE_CONNECTION=tcp:5432 &
+        PROXY_PID=$!
+        echo $PROXY_PID > /workspace/proxy_pid.txt
+        echo "Waiting for proxy to be ready..."
+        sleep 10
+        echo "Cloud SQL Proxy started with PID: $PROXY_PID"
+
+  # Step 4: Run migrations using psql
+  - name: 'postgres:15-alpine'
+    id: 'run-migrations'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        echo "Running database migrations..."
+        echo "Connecting to database: ${_DATABASE_NAME}"
+        
+        # Wait for proxy to be ready
+        sleep 5
+        
+        # Run migration files in order
+        for migration_file in database/migrations/*.sql; do
+          echo "Applying migration: $migration_file"
+          PGPASSWORD="${_DB_PASSWORD}" psql \
+            -h 127.0.0.1 \
+            -p 5432 \
+            -U ${_DB_USER} \
+            -d ${_DATABASE_NAME} \
+            -f "$migration_file" \
+            -v ON_ERROR_STOP=1
+          
+          if [ $? -eq 0 ]; then
+            echo "✓ Migration $migration_file applied successfully"
+          else
+            echo "✗ Migration $migration_file failed"
+            exit 1
+          fi
+        done
+        
+        echo "=========================================="
+        echo "All migrations completed successfully!"
+        echo "=========================================="
+
+  # Step 5: Verify migrations
+  - name: 'postgres:15-alpine'
+    id: 'verify-migrations'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        echo "Verifying database tables..."
+        PGPASSWORD="${_DB_PASSWORD}" psql \
+          -h 127.0.0.1 \
+          -p 5432 \
+          -U ${_DB_USER} \
+          -d ${_DATABASE_NAME} \
+          -c "\dt" \
+          -c "SELECT COUNT(*) as hello_world_count FROM hello_world;" \
+          -c "SELECT COUNT(*) as applications_count FROM applications;"
+        
+        echo "Database verification complete!"
+
+# Substitutions - Override these in Cloud Build Trigger
+substitutions:
+  _DATABASE_NAME: 'devfest_db'
+  _DB_USER: 'devfest_user'
+  _DB_PASSWORD: 'DevF3st123-pluto-is-plan3t'
+
+# Build timeout
+timeout: '600s'
+
+# Options
+options:
+  logging: CLOUD_LOGGING_ONLY
+

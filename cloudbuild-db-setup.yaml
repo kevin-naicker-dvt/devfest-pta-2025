@@ -1,0 +1,91 @@
+# Cloud Build configuration for CloudSQL Database Setup
+# This is a ONE-TIME setup to create the CloudSQL instance
+# Run manually: gcloud builds submit --config=cloudbuild-db-setup.yaml
+# Or set up as a Cloud Build trigger (manual execution only)
+
+steps:
+  # Step 1: Create CloudSQL PostgreSQL instance
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'create-cloudsql-instance'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Creating CloudSQL PostgreSQL instance..."
+        gcloud sql instances create devfest-db-instance \
+          --database-version=POSTGRES_15 \
+          --tier=db-f1-micro \
+          --region=africa-south1 \
+          --storage-type=SSD \
+          --storage-size=10GB \
+          --storage-auto-increase \
+          --backup \
+          --enable-bin-log \
+          --root-password="${_DB_PASSWORD}" \
+          --no-assign-ip \
+          --network=projects/$PROJECT_ID/global/networks/default \
+          || echo "Instance might already exist, continuing..."
+    timeout: '600s'
+
+  # Step 2: Create the database
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'create-database'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Creating database: ${_DATABASE_NAME}..."
+        gcloud sql databases create ${_DATABASE_NAME} \
+          --instance=devfest-db-instance \
+          || echo "Database might already exist, continuing..."
+    timeout: '300s'
+
+  # Step 3: Create database user
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'create-user'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Creating database user: ${_DB_USER}..."
+        gcloud sql users create ${_DB_USER} \
+          --instance=devfest-db-instance \
+          --password="${_DB_PASSWORD}" \
+          || echo "User might already exist, continuing..."
+    timeout: '300s'
+
+  # Step 4: Display connection information
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'display-info'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "=========================================="
+        echo "CloudSQL Instance Setup Complete!"
+        echo "=========================================="
+        echo "Instance Name: devfest-db-instance"
+        echo "Database: ${_DATABASE_NAME}"
+        echo "User: ${_DB_USER}"
+        echo "Region: africa-south1"
+        echo ""
+        echo "Connection String for Cloud Run:"
+        INSTANCE_CONNECTION=$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
+        echo "INSTANCE_CONNECTION_NAME: $INSTANCE_CONNECTION"
+        echo ""
+        echo "Use this in your Cloud Run services!"
+        echo "=========================================="
+
+# Substitutions - Override these in Cloud Build Trigger
+substitutions:
+  _DATABASE_NAME: 'devfest_db'
+  _DB_USER: 'devfest_user'
+  _DB_PASSWORD: 'DevF3st123-pluto-is-plan3t'
+
+# Build timeout
+timeout: '1800s'
+
+# Options
+options:
+  logging: CLOUD_LOGGING_ONLY
+

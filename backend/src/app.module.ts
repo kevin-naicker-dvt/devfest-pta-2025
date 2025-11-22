@@ -11,14 +11,26 @@ import { Application } from './entities/application.entity';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
+      // Cloud Run uses Unix socket for CloudSQL connection
+      // Local development uses TCP
+      ...(process.env.DB_HOST?.startsWith('/cloudsql/')
+        ? {
+            host: process.env.DB_HOST, // Unix socket path
+            extra: {
+              socketPath: process.env.DB_HOST,
+            },
+          }
+        : {
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT) || 5432,
+          }),
       username: process.env.DB_USER || 'devfest_user',
       password: process.env.DB_PASSWORD || 'DevF3st123-pluto-is-plan3t',
       database: process.env.DB_NAME || 'devfest_db',
       entities: [HelloWorld, Application],
       synchronize: false, // Using migration scripts instead
-      logging: true,
+      logging: process.env.NODE_ENV !== 'production', // Reduce logs in production
+      ssl: false, // CloudSQL Unix socket doesn't need SSL
     }),
     TypeOrmModule.forFeature([HelloWorld, Application]),
   ],
