@@ -1,6 +1,9 @@
 # Multi-stage build for React frontend
 FROM node:18-alpine AS builder
 
+# Declare build argument
+ARG REACT_APP_API_URL
+
 WORKDIR /app
 
 # Copy package files
@@ -12,7 +15,10 @@ RUN npm install
 # Copy source code
 COPY frontend/ ./
 
-# Build the application
+# Set environment variable for React build
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
+# Build the application with the environment variable
 RUN npm run build
 
 # Production stage with nginx
