@@ -23,9 +23,9 @@ steps:
       - '-c'
       - |
         echo "Getting CloudSQL connection name..."
-        INSTANCE_CONNECTION=$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
-        echo "$INSTANCE_CONNECTION" > /workspace/instance_connection.txt
-        echo "Connection name: $INSTANCE_CONNECTION"
+        INSTANCE_CONNECTION=$$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
+        echo "$$INSTANCE_CONNECTION" > /workspace/instance_connection.txt
+        echo "Connection name: $$INSTANCE_CONNECTION"
 
   # Step 3: Start Cloud SQL Proxy in background
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -35,13 +35,13 @@ steps:
       - '-c'
       - |
         echo "Starting Cloud SQL Proxy..."
-        INSTANCE_CONNECTION=$(cat /workspace/instance_connection.txt)
-        /workspace/cloud_sql_proxy -instances=$INSTANCE_CONNECTION=tcp:5432 &
-        PROXY_PID=$!
-        echo $PROXY_PID > /workspace/proxy_pid.txt
+        INSTANCE_CONNECTION=$$(cat /workspace/instance_connection.txt)
+        /workspace/cloud_sql_proxy -instances=$$INSTANCE_CONNECTION=tcp:5432 &
+        PROXY_PID=$$!
+        echo $$PROXY_PID > /workspace/proxy_pid.txt
         echo "Waiting for proxy to be ready..."
         sleep 10
-        echo "Cloud SQL Proxy started with PID: $PROXY_PID"
+        echo "Cloud SQL Proxy started with PID: $$PROXY_PID"
 
   # Step 4: Run migrations using psql
   - name: 'postgres:15-alpine'
@@ -58,19 +58,19 @@ steps:
         
         # Run migration files in order
         for migration_file in database/migrations/*.sql; do
-          echo "Applying migration: $migration_file"
+          echo "Applying migration: $$migration_file"
           PGPASSWORD="${_DB_PASSWORD}" psql \
             -h 127.0.0.1 \
             -p 5432 \
             -U ${_DB_USER} \
             -d ${_DATABASE_NAME} \
-            -f "$migration_file" \
+            -f "$$migration_file" \
             -v ON_ERROR_STOP=1
           
-          if [ $? -eq 0 ]; then
-            echo "✓ Migration $migration_file applied successfully"
+          if [ $$? -eq 0 ]; then
+            echo "✓ Migration $$migration_file applied successfully"
           else
-            echo "✗ Migration $migration_file failed"
+            echo "✗ Migration $$migration_file failed"
             exit 1
           fi
         done

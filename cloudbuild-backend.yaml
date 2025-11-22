@@ -37,9 +37,9 @@ steps:
       - '-c'
       - |
         echo "Getting CloudSQL connection name..."
-        INSTANCE_CONNECTION=$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
-        echo "$INSTANCE_CONNECTION" > /workspace/instance_connection.txt
-        echo "Connection name: $INSTANCE_CONNECTION"
+        INSTANCE_CONNECTION=$$(gcloud sql instances describe devfest-db-instance --format='value(connectionName)')
+        echo "$$INSTANCE_CONNECTION" > /workspace/instance_connection.txt
+        echo "Connection name: $$INSTANCE_CONNECTION"
 
   # Step 4: Deploy to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -48,12 +48,12 @@ steps:
     args:
       - '-c'
       - |
-        INSTANCE_CONNECTION=$(cat /workspace/instance_connection.txt)
+        INSTANCE_CONNECTION=$$(cat /workspace/instance_connection.txt)
         echo "Deploying backend to Cloud Run..."
-        echo "Using CloudSQL connection: $INSTANCE_CONNECTION"
+        echo "Using CloudSQL connection: $$INSTANCE_CONNECTION"
         
         gcloud run deploy devfest-backend \
-          --image=gcr.io/$PROJECT_ID/devfest-backend:$SHORT_SHA \
+          --image=gcr.io/$$PROJECT_ID/devfest-backend:$$SHORT_SHA \
           --platform=managed \
           --region=africa-south1 \
           --allow-unauthenticated \
@@ -63,12 +63,12 @@ steps:
           --min-instances=0 \
           --max-instances=10 \
           --set-env-vars="NODE_ENV=production" \
-          --set-env-vars="DB_HOST=/cloudsql/$INSTANCE_CONNECTION" \
+          --set-env-vars="DB_HOST=/cloudsql/$$INSTANCE_CONNECTION" \
           --set-env-vars="DB_PORT=5432" \
           --set-env-vars="DB_NAME=${_DATABASE_NAME}" \
           --set-env-vars="DB_USER=${_DB_USER}" \
           --set-env-vars="DB_PASSWORD=${_DB_PASSWORD}" \
-          --add-cloudsql-instances=$INSTANCE_CONNECTION
+          --add-cloudsql-instances=$$INSTANCE_CONNECTION
         
         echo "Backend deployment complete!"
 
@@ -79,18 +79,18 @@ steps:
     args:
       - '-c'
       - |
-        BACKEND_URL=$(gcloud run services describe devfest-backend --region=africa-south1 --format='value(status.url)')
+        BACKEND_URL=$$(gcloud run services describe devfest-backend --region=africa-south1 --format='value(status.url)')
         echo "=========================================="
         echo "Backend API deployed successfully!"
         echo "=========================================="
-        echo "Backend URL: $BACKEND_URL"
+        echo "Backend URL: $$BACKEND_URL"
         echo ""
         echo "Test endpoints:"
-        echo "  Health check: $BACKEND_URL"
-        echo "  Hello World: $BACKEND_URL/hello"
-        echo "  Applications: $BACKEND_URL/applications"
+        echo "  Health check: $$BACKEND_URL"
+        echo "  Hello World: $$BACKEND_URL/hello"
+        echo "  Applications: $$BACKEND_URL/applications"
         echo "=========================================="
-        echo "$BACKEND_URL" > /workspace/backend_url.txt
+        echo "$$BACKEND_URL" > /workspace/backend_url.txt
 
 # Store images in Container Registry
 images:
