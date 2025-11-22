@@ -180,6 +180,8 @@ Password		DevF3st123-pluto-is-plan3t
 PART 4: DevFest Pretoria Prompts (Revert to demo project, and step through triggers; make code change to demo)
 ---------------------------------------------------------------------------------
 
+PGPASSWORD='DevF3st123-pluto-is-plan3t' psql -h 34.35.159.229 -p 5432 -U devfest_user -d devfest_db -c "DELETE FROM applications;"
+
 
 
 
