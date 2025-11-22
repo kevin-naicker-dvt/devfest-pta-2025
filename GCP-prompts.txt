@@ -1,0 +1,201 @@
+---------------------------------------------------------------------------------
+DevFest Pretoria / UNISA / Future Africa Campus
+---------------------------------------------------------------------------------
+
+Setup:
+
+1. Github Repo - devfest-pta-2025-live + init						COMPLETE
+
+2.1 IDE (e.g. Cursor or Visual Studio Code)						COMPLETE
+
+2.2 Docker Desktop									COMPLETE
+	
+2.3 PGAdmin 4										COMPLETE
+
+3. Google Account (GCP Account) - Free account or personal account ($100)		COMPLETE
+	3.1. AR
+	3.2 Cloud Run
+	3.3 Cloud Build
+
+4. Shell Application									COMPLETE
+	4.1. UX - ReactJS with Typescript
+	4.2. API Microservice - NestJS / Express JS
+	4.3. PostgreSQL
+
+5. Deployment
+	5.1. Docker Build (local test)							COMPLETE
+	5.2. Create Cloud DB								COMPLETE
+	5.3. Create Cloud Run and Cloud Build						COMPLETE
+	5.4. Configure ENV variables							COMPLETE
+	5.5. Deploy to GCP and Test							COMPLETE
+
+6. Extend the Application Features
+	6.1. Applicant Capture Form							COMPLETE
+	6.2. Recruiter Dashboard							COMPLETE
+	6.3. Recruiter Actions								COMPLETE
+	6.4. Messaging
+
+---------------------------------------------------------------------------------
+7. Secure Architecture
+	7.1. Private Subnet
+	7.2. Public Subnet
+	7.3. Application Service Accounts
+	7.4. Credentials Management using secrets
+	7.6. Named User Accounts
+	7.7. JWT tokens and single sign-on
+	7.8. Pen Testing
+	7.9. Vulnerability Scanning
+	7.10. Working with Github and branches
+
+8. Training Recommendations
+	8.1. GCP 
+	8.2. NodeJS, Express JS, NestJS
+	8.3. ReactJS with Typescript
+
+---------------------------------------------------------------------------------
+PART 1: DevFest Pretoria Prompts (Hello World) - 10 minutes
+---------------------------------------------------------------------------------
+
+1. I need to create a simple 3-tier application for deployment to Google Cloud Platform for a Google Developer conference.
+
+1.1. The UX will be in ReactJS using Typescript
+1.2. The microservice API will be in NestJS
+1.3. The Database will be in PostgreSQL
+
+2A. The local deployment architecture is as follows:
+
+2.1. Docker Desktop for local deployment (UX, API and DB)
+2.2. Build Docker files for local testing
+2.3. Once tested locally, we will test on GCP
+
+2A. The GCP deployment architecture is as follows:
+
+2.1. Build Docker images for (UX, API) from Cloud Build Triggers, integrated with Github
+2.2. For the DB, I will setup Google Cloud SQL (PostgreSQL) and share the instance and credentials for config
+
+3. Information to be provided
+
+3.1. Name of the public Github Repository (https://github.com/kevin-naicker-dvt/devfest-pta-2025)
+3.2. Sensitive credentials such as DB password "DevF3st123-pluto-is-plan3t"
+3.4. Micro-service URL will be determined once API is deployed on GCP
+3.5. Local PC is windows (power shell)
+3.6. Remote GCP environment must make use of Linux for OS
+
+4. Maintaining the code
+
+4.1. Once we have the basic application working, we will create a trigger-based pipeline
+
+5. Application Scope
+	5.1. First a "Hello world" retrieved from a DB table
+	5.2. The main app is a web recruitment app
+	5.3. User Story 1 : As a job applicant, I want to complete a simple job hire form and attach my CV
+	5.4. User Story 2 : As a recruiter, I want to see a application queue with details and status 
+	5.5. User Story 3 : As a recruiter, I want to select and view an application, add notes, and change the status
+	5.6. User Story 4 : As a job applicant, I want to view the status of my application, once the recruiter has updated my application 
+
+6. For CV upload, emulate this for the demo, no need to upload
+7. For user and auth, also emulate this, no need for auth
+8. Use Mono Repo
+
+Let me know if you have any clarifying questions, but do not start coding, I will provide instructions in a structured manner, and we will test as we go along.
+
+---------------------------------------------------------------------------------
+
+1. Mono-repo
+2. For hello word, use simple table, we will create other later. For now, we want to test the architecture
+3. Yes, use standard ports
+4. Yes
+5. Role Switcher
+6. Yes, use .env file for both
+7. Yes, please separate local and demo (do not use production term, as this is a demo)
+
+---------------------------------------------------------------------------------
+
+Ok great, let's start with Hello world app to test the local docker architecture >> Stage 0.1 Draft
+
+---------------------------------------------------------------------------------
+
+(Manually add .env file)
+(Run .ps command) >> 0.1
+(Prompts to resolve npm issues) >> 0.2
+(Backend API is not responding, Fix ORM) >> 0.3
+
+(DB Test on PGAdmin)
+Host name/address	localhost
+Port			5432
+Maintenance database	devfest_db
+Username		devfest_user
+Password		DevF3st123-pluto-is-plan3t
+
+V1 Success!
+
+---------------------------------------------------------------------------------
+PART 2: DevFest Pretoria Prompts (Recruitment App) - 10 mins
+---------------------------------------------------------------------------------
+
+Ok great, now create a simple frontend for the CV submission, since this is a demo, keep it simple
+Create a menu and button for the candidate (emulate a login name, email and full name) so we can identify the candidate later
+please also update the database migration scripts, we will need this later for deployments to the cloud
+also create an CV upload, but remember, for the demo, this is simulation only, not upload
+
+(Do not grey out John Doe, and please remove it, a bit macabre don't you think. Also please allow me to edit the candidates, so I can create multiple entries.)
+(Under my applications, allow the candidate to see the effects of the recruiter updates)
+
+---------------------------------------------------------------------------------
+
+Ok great, now create a simple queue manager (table report) that shows each candidate as they submit
+Create a menu and button for the recruiter (no login name, email or full name is needed)
+Allow the recruiter to open and edit the application with status and notes
+Again, since this is a demo, keep it simple
+
+---------------------------------------------------------------------------------
+PART 3: DevFest Pretoria Prompts (GCP Deployment) (Yaml files) - 10 mins
+---------------------------------------------------------------------------------
+
+Ok, great we are ready for GCP. Let's go ahead and created CICD pipeline using CloudBuild (Triggers) and Cloud Run.
+This is a demo, so keep it simple, and use google's auto-generated URL to test the front-end.
+
+Steps:
+
+1. Automate the creation of the CloudSQL DB setup for postgresql (yaml 1, once off)
+2. Automate the DB migrations scripts for our app via CICD pipeline (yaml 2, if code is changed via push to branch)
+3. Automate the API build via CICD pipeline (and configure the DB password) (yaml 3, if code is changed via push to branch)
+4. Automate the UX deploy via CICD pipeline (yaml 4, if code is changed)
+5. Ensure everything can ve setup and automated via cloud build trigger (and not gcloud manual scripts)
+6. For the demo, assume any change to the code (since it's a mono-repo) can trigger yaml 2-4 and this is acceptable
+7. For the demo, we want the simplest working solution to demonstrate the fundamentals of Github, CICD, Cloud Build and Cloud Run
+
+8. The config parameter are:
+
+GCP Project		dvt-lab-devfest-2025
+GCP Project ID		882266340372
+URL			https://console.cloud.google.com/cloud-build/triggers;region=africa-south1?project=dvt-lab-devfest-2025
+Database		devfest_db
+Username		devfest_user
+Password		DevF3st123-pluto-is-plan3t
+
+9. Let me know if you have any clarifying questions
+
+---------------------------------------------------------------------------------
+PART 4: DevFest Pretoria Prompts (Revert to demo project, and step through triggers; make code change to demo)
+---------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
