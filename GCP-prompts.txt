@@ -4,39 +4,40 @@ DevFest Pretoria / UNISA / Future Africa Campus
 
 Setup:
 
-1. Github Repo - devfest-pta-2025-live + init						COMPLETE
+1. Github Repo - devfest-pta-2025-live + init						
+	https://github.com/kevin-naicker-dvt/devfest-pta-2025-live
 
-2.1 IDE (e.g. Cursor or Visual Studio Code)						COMPLETE
+2.1 IDE (e.g. Cursor or Visual Studio Code)						
 
-2.2 Docker Desktop									COMPLETE
+2.2 Docker Desktop									
 	
-2.3 PGAdmin 4										COMPLETE
+2.3 PGAdmin 4								
 
-3. Google Account (GCP Account) - Free account or personal account ($100)		COMPLETE
+3. Google Account (GCP Account) - Free account or personal account ($100)		
 	3.1. AR
 	3.2 Cloud Run
 	3.3 Cloud Build
 
-4. Shell Application									COMPLETE
+4. Application Framework									
 	4.1. UX - ReactJS with Typescript
 	4.2. API Microservice - NestJS / Express JS
 	4.3. PostgreSQL
 
 5. Deployment
-	5.1. Docker Build (local test)							COMPLETE
-	5.2. Create Cloud DB								COMPLETE
-	5.3. Create Cloud Run and Cloud Build						COMPLETE
-	5.4. Configure ENV variables							COMPLETE
-	5.5. Deploy to GCP and Test							COMPLETE
+	5.1. Docker Build (local test)							
+	5.2. Create Cloud DB								
+	5.3. Create Cloud Run and Cloud Build						
+	5.4. Configure ENV variables							
+	5.5. Deploy to GCP and Test							
 
 6. Extend the Application Features
-	6.1. Applicant Capture Form							COMPLETE
-	6.2. Recruiter Dashboard							COMPLETE
-	6.3. Recruiter Actions								COMPLETE
+	6.1. Applicant Capture Form							
+	6.2. Recruiter Dashboard							
+	6.3. Recruiter Actions								
 	6.4. Messaging
 
 ---------------------------------------------------------------------------------
-7. Secure Architecture
+7. NOT INCLUDED TODAY: Secure Architecture
 	7.1. Private Subnet
 	7.2. Public Subnet
 	7.3. Application Service Accounts
@@ -88,7 +89,7 @@ PART 1: DevFest Pretoria Prompts (Hello World) - 10 minutes
 5. Application Scope
 	5.1. First a "Hello world" retrieved from a DB table
 	5.2. The main app is a web recruitment app
-	5.3. User Story 1 : As a job applicant, I want to complete a simple job hire form and attach my CV
+	5.3. User Story 1 : As a job applicant, I want to  a simple job hire form and attach my CV
 	5.4. User Story 2 : As a recruiter, I want to see a application queue with details and status 
 	5.5. User Story 3 : As a recruiter, I want to select and view an application, add notes, and change the status
 	5.6. User Story 4 : As a job applicant, I want to view the status of my application, once the recruiter has updated my application 
